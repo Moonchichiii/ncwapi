@@ -1,0 +1,12 @@
+celery
+Django
+dj_database_url
+django-cloudinary-storage
+django-cors-headers
+django-filter
+django-ratelimit
+djangorestframework
+Pillow
+python-decouple
+redis
+
