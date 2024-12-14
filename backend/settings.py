@@ -11,6 +11,10 @@ SECRET_KEY = config('SECRET_KEY')  # Fetch SECRET_KEY from environment variables
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -27,6 +31,7 @@ INSTALLED_APPS = [
     'django_filters',
     'contact',
     'projects',
+    'csp',
 ]
 
 MIDDLEWARE = [
@@ -39,6 +44,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_ratelimit.middleware.RatelimitMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -170,6 +176,8 @@ LOGGING = {
     },
 }
 
+
+
 # Celery configuration
 CELERY_BROKER_URL = config('REDIS_URL', default='redis://127.0.0.1:6379/1')
 CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://127.0.0.1:6379/1')
@@ -186,5 +194,57 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+
+
+
+# Content Security Policy (CSP) 
+CSP_DEFAULT_SRC = ("'self'", 'http://localhost:5173',)
+CSP_SCRIPT_SRC = (
+    "'self'", 
+    "'unsafe-inline'", 
+    "'unsafe-eval'", 
+    'https://cdnjs.cloudflare.com', 
+    'http://localhost:5173',
+)
+CSP_STYLE_SRC = (
+    "'self'", 
+    "'unsafe-inline'", 
+    'https://fonts.googleapis.com', 
+    'http://localhost:5173',
+)
+CSP_IMG_SRC = (
+    "'self'", 
+    'data:', 
+    'blob:', 
+    'https://res.cloudinary.com', 
+    'http://localhost:8000', 
+    'http://localhost:5173',
+)
+CSP_FONT_SRC = (
+    "'self'", 
+    'https://fonts.gstatic.com', 
+    'data:',
+)
+CSP_CONNECT_SRC = (
+    "'self'", 
+    'http://localhost:8000', 
+    'http://localhost:5173', 
+    'https://api.nordiccodeworks.com',
+)
+CSP_FRAME_SRC = ("'none'",)  
+CSP_OBJECT_SRC = ("'none'",)  
+
+# Set False to True in production
+
+SECURE_SSL_REDIRECT = False  
+SESSION_COOKIE_SECURE = False  
+CSRF_COOKIE_SECURE = False  
+SECURE_HSTS_SECONDS = 0  # Set to at least 31536000 in production
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False  
+SECURE_HSTS_PRELOAD = False  
+
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
