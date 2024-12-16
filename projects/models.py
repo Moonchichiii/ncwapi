@@ -1,14 +1,14 @@
+# models.py
 from django.db import models
 
 class Project(models.Model):
-    """Model representing a project."""
     title = models.CharField(max_length=200)
     description = models.TextField()
     location = models.CharField(max_length=100)
     services = models.CharField(max_length=200)
     year = models.CharField(max_length=4)
     image = models.ImageField(upload_to='projects/', blank=True, null=True)
-    tags = models.JSONField(default=list)
+    category = models.CharField(max_length=100)
     link = models.CharField(max_length=200)
     external_link = models.URLField(blank=True, null=True)
     featured = models.BooleanField(default=False)

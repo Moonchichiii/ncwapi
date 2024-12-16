@@ -26,7 +26,7 @@ class ContactAPITest(TestCase):
         """Test creating a contact with an invalid email."""
         data = {
             'name': 'John Doe',
-            'email': 'john@invalid.com',
+            'email': 'johninvalid.com',
             'message': 'Hi!'
         }
         response = self.client.post('/api/contact/', data, format='json')

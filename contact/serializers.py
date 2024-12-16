@@ -1,19 +1,13 @@
 from rest_framework import serializers
-from .models import Contact
+from django.core.validators import EmailValidator
 import re
+from .models import Contact
 
 class ContactSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Contact model.
-    """
+    email = serializers.EmailField(validators=[EmailValidator()])
+
     class Meta:
         model = Contact
         fields = ['id', 'name', 'email', 'message', 'created_at']
 
-    def validate_email(self, value):
-        """
-        Validate email format.
-        """
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
-            raise serializers.ValidationError("Enter a valid email address.")
-        return value
+    

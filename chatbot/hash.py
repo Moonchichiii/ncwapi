@@ -1,3 +1,17 @@
+"""
+This module provides functions to hash and verify messages 
+and secrets using HMAC-SHA256 and SHA-256.
+Functions:
+    hash_message(message: str) -> str:
+        Hash the user's message using 
+        HMAC-SHA256 with an optional pepper for enhanced security.
+    hash_secret(secret: str, salt: str = None) -> str:
+        Hash a secret (like an API key or password) 
+        using SHA-256 with an optional salt for enhanced security.
+    verify_message_hash(message: str, message_hash: str) -> bool:
+        Verify if the provided message matches its hash using HMAC-SHA256.
+"""
+
 import hashlib
 import hmac
 import os
@@ -17,11 +31,11 @@ def hash_message(message: str) -> str:
     """
     if not isinstance(message, str):
         raise ValueError("Message must be a string.")
-    
+
     # Use HMAC to combine the message with a pepper (extra layer of security)
     message_bytes = message.encode('utf-8')
     pepper_bytes = PEPPER.encode('utf-8')
-    
+
     # HMAC SHA-256 hashing
     message_hash = hmac.new(pepper_bytes, message_bytes, hashlib.sha256).hexdigest()
     return message_hash
@@ -39,11 +53,11 @@ def hash_secret(secret: str, salt: str = None) -> str:
     """
     if not isinstance(secret, str):
         raise ValueError("Secret must be a string.")
-    
+
     if salt is None:
         # Generate a random salt if not provided (16 random bytes)
         salt = os.urandom(16).hex()
-    
+
     # Hash the secret combined with the salt
     secret_bytes = f'{secret}{salt}'.encode('utf-8')
     secret_hash = hashlib.sha256(secret_bytes).hexdigest()
@@ -61,6 +75,7 @@ def verify_message_hash(message: str, message_hash: str) -> bool:
     """
     if not isinstance(message, str) or not isinstance(message_hash, str):
         raise ValueError("Both message and message_hash must be strings.")
-    
+
     calculated_hash = hash_message(message)
-    return hmac.compare_digest(calculated_hash, message_hash)  
+    return hmac.compare_digest(calculated_hash, message_hash)
+

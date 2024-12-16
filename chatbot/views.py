@@ -11,7 +11,7 @@ from django_ratelimit.decorators import ratelimit
 from .hash import hash_message
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_protect
-from langdetect import detect_langs  # Improved language detection
+from langdetect import detect_langs
 
 # OpenAI Client
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
@@ -41,10 +41,10 @@ def detect_language(user_message: str) -> str:
     Defaults to Swedish if "hej" or common Swedish greetings are found.
     """
     if len(user_message) <= 2:
-        return 'en'  # Assume very short inputs default to English
+        return 'en'
 
-    # Check for simple Swedish greetings
-    swedish_greetings = ['hej', 'hallå', 'tjena', 'hejsan']
+    
+    swedish_greetings = ['hej', 'hallå', 'tjena', 'hejsan','hej!', 'hallå!', 'tjena!', 'hejsan!']
     if user_message.lower() in swedish_greetings:
         logger.info(f"Detected Swedish via keyword matching: {user_message}")
         return 'sv'
@@ -52,9 +52,9 @@ def detect_language(user_message: str) -> str:
     try:
         detected_languages = detect_langs(user_message)
         logger.info(f"Language detection results for '{user_message}': {detected_languages}")
-        
+
         for lang in detected_languages:
-            if lang.lang == 'sv' and lang.prob > 0.5:  # If Swedish is highly probable
+            if lang.lang == 'sv' and lang.prob > 0.5:
                 logger.info(f"Detected language: Swedish ({lang.prob})")
                 return 'sv'
 
@@ -75,19 +75,19 @@ def chatbot(request):
     user_message = request.data.get('message', '').strip()
     if not user_message:
         return Response({'error': 'Please enter a message to get a response.'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     safe_user_message = escape(user_message)
     cached_response = get_cached_response(safe_user_message)
     if cached_response:
         return Response({'message': cached_response}, status=status.HTTP_200_OK)
-    
+
     try:
-        # **1. Detect the user's language**
+
         detected_language = detect_language(safe_user_message)
         logger.info(f"Detected language: {detected_language}")
 
-        # **2. Adjust the system prompt based on the detected language**
-        if detected_language == 'sv':  # Swedish detected
+        
+        if detected_language == 'sv':
             system_prompt = (
                 "Du är en chatbot för Nordic Code Works. "
                 "Vi bygger anpassade, högkvalitativa fullstack-webbapplikationer till rimliga priser. "
@@ -96,7 +96,7 @@ def chatbot(request):
                 "'Jag är här för att hjälpa till med frågor om våra projekt och hur du kan starta ett projekt med oss.' "
                 "Om användaren verkar osäker, föreslå: 'Vill du veta hur vi kan hjälpa dig att bygga din nästa webbapplikation?'"
             )
-        else:  # Default to English
+        else:
             system_prompt = (
                 "You are a chatbot for Nordic Code Works. "
                 "We build high-quality, custom full-stack web applications at competitive prices. "
@@ -105,8 +105,8 @@ def chatbot(request):
                 "'I'm here to help with questions about our projects and how you can start your own project with us.' "
                 "If the user seems unsure, suggest: 'Would you like to learn how we can help you build your next web application?'"
             )
+
         
-        # **3. Call OpenAI to get a response in the detected language**
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -116,10 +116,10 @@ def chatbot(request):
             max_tokens=150,
             temperature=0.3
         )
-        
+
         bot_message = response.choices[0].message.content.strip()
         set_cached_response(safe_user_message, bot_message)
-        
+
         return Response({'message': bot_message}, status=status.HTTP_200_OK)
     except (APIError, RateLimitError, Timeout) as e:
         logger.error(f"OpenAI API error: {e}")

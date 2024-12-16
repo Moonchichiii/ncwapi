@@ -12,7 +12,7 @@ class ProjectAPITest(TestCase):
         self.project = Project.objects.create(
             title='Test Project',
             description='A test project.',
-            tags='test, django',
+            tags=["test", "django"],
             featured=True
         )
 
@@ -20,7 +20,8 @@ class ProjectAPITest(TestCase):
         """Test retrieving the list of projects."""
         response = self.client.get('/api/projects/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data), 1)
+
 
     def test_get_project_detail(self):
         """Test retrieving a single project's details."""

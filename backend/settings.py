@@ -3,6 +3,7 @@ Settings for the Django project.
 """
 
 from pathlib import Path
+import sys
 from decouple import config
 import dj_database_url
 
@@ -20,6 +21,10 @@ X_FRAME_OPTIONS = 'DENY'
 
 
 PROJECT_NAME = 'Nordic Code Works'
+
+
+if 'test' in sys.argv:
+    CSRF_TRUSTED_ORIGINS = ['http://testserver']
 
 
 # Application definition
@@ -111,6 +116,7 @@ CLOUDINARY_STORAGE = {
     'API_KEY': config('CLOUDINARY_API_KEY'),
     'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
+
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Django REST Framework configuration
@@ -119,6 +125,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 
 OPENAI_API_KEY = config('OPENAI_API_KEY')
@@ -143,9 +151,9 @@ CORS_ALLOWED_ORIGINS = [
     Allow cross-origin cookies from same-site
     Ensure session cookie is accessible in cross-origin requests
 """
-CSRF_COOKIE_SECURE = False  
-SESSION_COOKIE_SECURE = False  
-CSRF_COOKIE_HTTPONLY = False  
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
 
