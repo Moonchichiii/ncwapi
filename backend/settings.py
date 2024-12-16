@@ -1,19 +1,26 @@
+"""
+Settings for the Django project.
+"""
+
 from pathlib import Path
 from decouple import config
 import dj_database_url
-import os
 
 # Paths config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
-SECRET_KEY = config('SECRET_KEY')  # Fetch SECRET_KEY from environment variables
+SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+
+
+PROJECT_NAME = 'Nordic Code Works'
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -31,21 +38,23 @@ INSTALLED_APPS = [
     'django_filters',
     'contact',
     'projects',
+    'chatbot',
     'csp',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django_ratelimit.middleware.RatelimitMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_ratelimit.middleware.RatelimitMiddleware',
     'csp.middleware.CSPMiddleware',
 ]
+
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -112,29 +121,70 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
+OPENAI_API_KEY = config('OPENAI_API_KEY')
+
 # CORS headers configuration
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
 
-# Rate limiting configuration (django-ratelimit)
-RATELIMIT_ENABLE = True
-RATELIMIT_VIEW = 'django_ratelimit.views.ratelimited'
-RATELIMIT_CACHE = 'default'
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
 
-# Caching configuration
+# Add the localhost to CORS_ALLOWED_ORIGINS
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://nordiccodeworks.com'
+]
+
+# CSRF and Cookie settings
+""" Don't require HTTPS for CSRF cookies in development 
+    Don't require HTTPS for session cookies in development
+    Allow client-side JS to access the CSRF token
+    Allow cross-origin cookies from same-site
+    Ensure session cookie is accessible in cross-origin requests
+"""
+CSRF_COOKIE_SECURE = False  
+SESSION_COOKIE_SECURE = False  
+CSRF_COOKIE_HTTPONLY = False  
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+
+# Rate limiting configuration (django-ratelimit)
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'CONNECTION_POOL_CLASS': 'django_redis.pool.BlockingConnectionPool',
             'CONNECTION_POOL_KWARGS': {
                 'max_connections': 100,
-                'timeout': 20,
-            }
+            },
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
         }
     }
 }
+
+# Rate limiting configuration
+RATELIMIT_ENABLE = True
+RATELIMIT_VIEW = 'django_ratelimit.views.ratelimited'
+RATELIMIT_CACHE = 'default'
+RATELIMIT_GROUPS = {
+    'default': {
+        'rate': '10/m',
+    },
+}
+
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'max_retries': 3,
+    'interval_start': 0,
+    'interval_step': 0.2,
+    'interval_max': 0.5,
+}
+
+
+
 
 # Logging configuration
 LOGGING = {
@@ -195,9 +245,9 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
+CSP_DEFAULT_SRC = ("'self'", 'http://localhost:5173')
 
-
-# Content Security Policy (CSP) 
+# Content Security Policy (CSP)
 CSP_DEFAULT_SRC = ("'self'", 'http://localhost:5173',)
 CSP_SCRIPT_SRC = (
     "'self'", 
@@ -229,22 +279,22 @@ CSP_CONNECT_SRC = (
     "'self'", 
     'http://localhost:8000', 
     'http://localhost:5173', 
-    'https://api.nordiccodeworks.com',
+    'https://nordiccodeworks.com',
+    'https://api.openai.com',
 )
-CSP_FRAME_SRC = ("'none'",)  
-CSP_OBJECT_SRC = ("'none'",)  
+CSP_FRAME_SRC = ("'none'",)
+CSP_OBJECT_SRC = ("'none'",)
 
-# Set False to True in production
 
-SECURE_SSL_REDIRECT = False  
-SESSION_COOKIE_SECURE = False  
-CSRF_COOKIE_SECURE = False  
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
 SECURE_HSTS_SECONDS = 0  # Set to at least 31536000 in production
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False  
-SECURE_HSTS_PRELOAD = False  
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
 
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-

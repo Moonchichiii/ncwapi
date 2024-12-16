@@ -3,14 +3,15 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from .models import Contact
 
-
-# Create your tests here.
-
 class ContactAPITest(TestCase):
+    """Test suite for the Contact API."""
+
     def setUp(self):
+        """Set up the test client."""
         self.client = APIClient()
 
     def test_create_contact_valid_email(self):
+        """Test creating a contact with a valid email."""
         data = {
             'name': 'Jane Doe',
             'email': 'jane@example.com',
@@ -22,6 +23,7 @@ class ContactAPITest(TestCase):
         self.assertEqual(Contact.objects.get().name, 'Jane Doe')
 
     def test_create_contact_invalid_email(self):
+        """Test creating a contact with an invalid email."""
         data = {
             'name': 'John Doe',
             'email': 'john@invalid.com',

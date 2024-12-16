@@ -10,5 +10,8 @@ django-ratelimit
 djangorestframework
 Pillow
 python-decouple
+openai
 redis
+psycopg2-binary
+langdetect
 

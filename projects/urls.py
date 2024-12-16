@@ -5,3 +5,7 @@ urlpatterns = [
     path('', ProjectListView.as_view(), name='project-list'),
     path('<int:pk>/', ProjectDetailView.as_view(), name='project-detail'),
 ]
+
+"""
+URL configuration for project-related views.
+"""

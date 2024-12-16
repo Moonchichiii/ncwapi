@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Contact)
 def send_contact_email(sender, instance, created, **kwargs):
+    """
+    Sends an email notification when a new Contact instance is created.
+    """
     if created:
         try:
             send_mail(

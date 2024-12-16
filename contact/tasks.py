@@ -7,6 +7,14 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def send_contact_email(name, email, message):
+    """
+    Sends an email with the contact information.
+    
+    Args:
+        name (str): Name of the contact.
+        email (str): Email address of the contact.
+        message (str): Message from the contact.
+    """
     try:
         send_mail(
             subject=f'New Contact from {name}',

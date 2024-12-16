@@ -1,6 +1,10 @@
 import os
 from celery import Celery
 
+"""
+Celery configuration for the backend project.
+"""
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 app = Celery('backend')

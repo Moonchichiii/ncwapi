@@ -3,12 +3,17 @@ from .models import Contact
 import re
 
 class ContactSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Contact model.
+    """
     class Meta:
         model = Contact
         fields = ['id', 'name', 'email', 'message', 'created_at']
 
     def validate_email(self, value):
-        # Example: Basic regex for email validation
+        """
+        Validate email format.
+        """
         if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
             raise serializers.ValidationError("Enter a valid email address.")
         return value

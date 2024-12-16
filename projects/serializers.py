@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Project
 
 class ProjectSerializer(serializers.ModelSerializer):
+    """Serializer for Project model."""
+    
     class Meta:
         model = Project
         fields = [
@@ -11,8 +13,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+        """Convert tags from JSON string to list."""
         representation = super().to_representation(instance)
-        # Convert tags from JSON to list.
         if isinstance(representation['tags'], str):
             representation['tags'] = eval(representation['tags'])
         return representation
